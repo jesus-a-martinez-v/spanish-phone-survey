@@ -1,5 +1,5 @@
 {
-    "updatedAt": "2026-05-08T22:32:49.503Z",
+    "updatedAt": "2026-05-08T23:16:35.986Z",
     "createdAt": "2026-05-08T18:24:41.988Z",
     "id": "tXttNyCL4uyzSKJj",
     "name": "Spanish Phone Survey — Retell Post-Call",
@@ -89,7 +89,7 @@
         },
         {
             "parameters": {
-                "sendTo": "jesus@datasmarts.net",
+                "sendTo": "jesus@datasmarts.net, raiz@thefamilyfirst.co",
                 "subject": "={{ $json.email_subject }}",
                 "message": "={{ $json.email_html }}",
                 "options": {
@@ -4344,9 +4344,9 @@
             }
         ]
     },
-    "versionId": "aee03b8a-922d-4512-8979-0f4e6705074d",
-    "activeVersionId": "aee03b8a-922d-4512-8979-0f4e6705074d",
-    "versionCounter": 44,
+    "versionId": "34a1b08a-954a-46c3-ae40-2f2f61928c80",
+    "activeVersionId": "34a1b08a-954a-46c3-ae40-2f2f61928c80",
+    "versionCounter": 47,
     "triggerCount": 1,
     "shared": [
         {
@@ -4369,9 +4369,9 @@
     ],
     "tags": [],
     "activeVersion": {
-        "updatedAt": "2026-05-08T22:32:49.507Z",
-        "createdAt": "2026-05-08T22:32:49.507Z",
-        "versionId": "aee03b8a-922d-4512-8979-0f4e6705074d",
+        "updatedAt": "2026-05-08T23:16:35.988Z",
+        "createdAt": "2026-05-08T23:16:35.988Z",
+        "versionId": "34a1b08a-954a-46c3-ae40-2f2f61928c80",
         "workflowId": "tXttNyCL4uyzSKJj",
         "nodes": [
             {
@@ -4456,7 +4456,7 @@
             },
             {
                 "parameters": {
-                    "sendTo": "jesus@datasmarts.net",
+                    "sendTo": "jesus@datasmarts.net, raiz@thefamilyfirst.co",
                     "subject": "={{ $json.email_subject }}",
                     "message": "={{ $json.email_html }}",
                     "options": {
@@ -4735,18 +4735,18 @@
         "autosaved": false,
         "workflowPublishHistory": [
             {
-                "createdAt": "2026-05-08T22:32:49.564Z",
-                "id": 409,
+                "createdAt": "2026-05-08T23:16:36.078Z",
+                "id": 420,
                 "workflowId": "tXttNyCL4uyzSKJj",
-                "versionId": "aee03b8a-922d-4512-8979-0f4e6705074d",
+                "versionId": "34a1b08a-954a-46c3-ae40-2f2f61928c80",
                 "event": "deactivated",
                 "userId": "72ea988c-e624-497c-ae70-93469eaa3fa7"
             },
             {
-                "createdAt": "2026-05-08T22:32:49.581Z",
-                "id": 410,
+                "createdAt": "2026-05-08T23:16:36.110Z",
+                "id": 421,
                 "workflowId": "tXttNyCL4uyzSKJj",
-                "versionId": "aee03b8a-922d-4512-8979-0f4e6705074d",
+                "versionId": "34a1b08a-954a-46c3-ae40-2f2f61928c80",
                 "event": "activated",
                 "userId": "72ea988c-e624-497c-ae70-93469eaa3fa7"
             }
