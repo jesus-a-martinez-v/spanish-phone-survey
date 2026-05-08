@@ -1,0 +1,6 @@
+{
+  "name": "spanish-phone-survey-web",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Static SPA + Vercel Edge function for the Spanish Phone Survey web entrypoint."
+}

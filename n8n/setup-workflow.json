@@ -1,0 +1,113 @@
+{
+  "name": "[Setup] Spanish Phone Survey — Create Sheet",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "setup-spanish-survey-sheet",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 0],
+      "id": "9c4e6a40-0001-4001-8001-000000000001",
+      "name": "Setup Webhook"
+    },
+    {
+      "parameters": {
+        "resource": "spreadsheet",
+        "operation": "create",
+        "title": "Spanish Phone Survey — Demo Log",
+        "sheetsUi": {
+          "sheetValues": [
+            { "title": "Calls" }
+          ]
+        },
+        "options": {
+          "locale": "es_419"
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [220, 0],
+      "id": "9c4e6a40-0001-4001-8001-000000000002",
+      "name": "Create Spreadsheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "qDGPNqnKLwO1pYbS",
+          "name": "[DataSmarts] Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "=https://sheets.googleapis.com/v4/spreadsheets/{{ $json.spreadsheetId }}/values/Calls!A1:P1?valueInputOption=USER_ENTERED",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleSheetsOAuth2Api",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"range\": \"Calls!A1:P1\",\n  \"majorDimension\": \"ROWS\",\n  \"values\": [[\n    \"timestamp_utc\",\n    \"timestamp_bogota\",\n    \"call_id\",\n    \"candidate_name\",\n    \"candidate_company\",\n    \"q1_escalabilidad\",\n    \"q2_diferenciacion\",\n    \"q3_enfoque\",\n    \"q4_compromiso\",\n    \"total\",\n    \"verdict\",\n    \"questions_answered\",\n    \"wants_followup\",\n    \"summary\",\n    \"sentiment\",\n    \"recording_url\"\n  ]]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [440, 0],
+      "id": "9c4e6a40-0001-4001-8001-000000000003",
+      "name": "Write Headers",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "qDGPNqnKLwO1pYbS",
+          "name": "[DataSmarts] Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1",
+              "name": "spreadsheetId",
+              "value": "={{ $('Create Spreadsheet').item.json.spreadsheetId }}",
+              "type": "string"
+            },
+            {
+              "id": "2",
+              "name": "spreadsheetUrl",
+              "value": "={{ $('Create Spreadsheet').item.json.spreadsheetUrl }}",
+              "type": "string"
+            },
+            {
+              "id": "3",
+              "name": "sheet_name",
+              "value": "Calls",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [660, 0],
+      "id": "9c4e6a40-0001-4001-8001-000000000004",
+      "name": "Result"
+    }
+  ],
+  "connections": {
+    "Setup Webhook": {
+      "main": [[{ "node": "Create Spreadsheet", "type": "main", "index": 0 }]]
+    },
+    "Create Spreadsheet": {
+      "main": [[{ "node": "Write Headers", "type": "main", "index": 0 }]]
+    },
+    "Write Headers": {
+      "main": [[{ "node": "Result", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

@@ -1,0 +1,22 @@
+# Vercel / build artifacts
+.vercel/
+node_modules/
+dist/
+.next/
+
+# Env files (never commit secrets)
+.env
+.env.*
+!.env.example
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
+
+# Claude Code session/plugin state
+.claude/
+
+# Logs
+*.log
+npm-debug.log*

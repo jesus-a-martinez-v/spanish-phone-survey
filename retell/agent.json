@@ -1,0 +1,47 @@
+{
+  "agent_id": "agent_c08a58dd2fc26d6bbb62911625",
+  "agent_name": "Spanish Survey — Programa Exportación",
+  "channel": "voice",
+  "language": "es-419",
+  "voice_id": "cartesia-Sofia",
+  "fallback_voice_ids": ["11labs-Andrea", "minimax-Andrea"],
+  "voice_temperature": 1,
+  "voice_speed": 1,
+  "response_engine": {
+    "type": "retell-llm",
+    "llm_id": "llm_eae40a7d15f589bbcf520882dffd",
+    "version": 0
+  },
+  "webhook_url": "https://n8n.srv841363.hstgr.cloud/webhook/retell-survey",
+  "webhook_events": ["call_analyzed"],
+  "post_call_analysis_model": "gpt-4.1",
+  "analysis_summary_prompt": "Resume la llamada en 2 a 3 oraciones, en español neutro latinoamericano, enfocándote en lo más relevante para evaluar al candidato: si respondió las cuatro preguntas, si demostró claridad y compromiso, y cualquier señal notable (positiva o negativa) sobre su perfil exportador.",
+  "analysis_user_sentiment_prompt": "Clasifica el sentimiento del candidato durante la llamada considerando entusiasmo, claridad, disposición a colaborar y compromiso con el programa.",
+  "post_call_analysis_data": [
+    { "type": "string", "name": "candidate_name", "description": "Nombre completo del candidato según se presentó al inicio de la llamada. Cadena vacía si no lo proporcionó." },
+    { "type": "string", "name": "candidate_company", "description": "Nombre de la empresa del candidato según lo mencionó al inicio. Cadena vacía si no lo proporcionó." },
+    { "type": "number", "name": "q1_escalabilidad_score", "description": "Puntaje de 1 a 5 para la pregunta de escalabilidad. 5 = identifica el cuello de botella concreto y propone un plan de contingencia claro. 3 = identifica el problema pero el plan es genérico. 1 = no sabe qué fallaría o dice que él lo haría todo. Devuelve 0 si no se respondió." },
+    { "type": "string", "name": "q1_escalabilidad_obs", "description": "Observación objetiva en una sola frase sobre la respuesta a la pregunta 1. Vacío si no respondió." },
+    { "type": "number", "name": "q2_diferenciacion_score", "description": "Puntaje de 1 a 5 para la pregunta de diferenciación. 5 = ventaja técnica concreta, metodología propia o nicho específico. 3 = diferenciador parcial. 1 = generalidades. Devuelve 0 si no se respondió." },
+    { "type": "string", "name": "q2_diferenciacion_obs", "description": "Observación objetiva en una sola frase sobre la respuesta a la pregunta 2. Vacío si no respondió." },
+    { "type": "number", "name": "q3_enfoque_score", "description": "Puntaje de 1 a 5 para la pregunta de enfoque comercial. 5 = define industria + cargo + facturación con responsable. 3 = parcial. 1 = 'cualquiera' o no sabe. Devuelve 0 si no se respondió." },
+    { "type": "string", "name": "q3_enfoque_obs", "description": "Observación objetiva en una sola frase sobre la respuesta a la pregunta 3. Vacío si no respondió." },
+    { "type": "number", "name": "q4_compromiso_score", "description": "Puntaje de 1 a 5 para la pregunta de compromiso. 5 = estructura de apoyo concreta, programa = prioridad #1. 3 = compromiso vago. 1 = pausaría el programa. Devuelve 0 si no se respondió." },
+    { "type": "string", "name": "q4_compromiso_obs", "description": "Observación objetiva en una sola frase sobre la respuesta a la pregunta 4. Vacío si no respondió." },
+    { "type": "number", "name": "questions_answered", "description": "Cantidad de las 4 preguntas que el candidato respondió de forma sustantiva (0 a 4)." },
+    { "type": "boolean", "name": "caller_wants_followup", "description": "Verdadero si el candidato pidió expresamente recibir más información o ser contactado." },
+    { "type": "system-presets", "name": "call_summary" },
+    { "type": "system-presets", "name": "user_sentiment" }
+  ],
+  "enable_backchannel": true,
+  "backchannel_frequency": 0.6,
+  "backchannel_words": ["Entendido", "Claro", "Ajá", "Sí, sí"],
+  "interruption_sensitivity": 0.7,
+  "end_call_after_silence_ms": 30000,
+  "max_call_duration_ms": 1800000,
+  "data_storage_setting": "everything",
+  "phone_binding": {
+    "phone_number": "+18642631104",
+    "nickname": "Spanish Survey"
+  }
+}

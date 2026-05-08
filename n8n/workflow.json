@@ -1,0 +1,174 @@
+{
+  "name": "Spanish Phone Survey — Retell Post-Call",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "retell-survey",
+        "responseMode": "onReceived",
+        "responseCode": 200,
+        "responseData": "noData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 0],
+      "id": "a0000000-0000-4000-8000-000000000001",
+      "name": "Retell Webhook"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "if-call-analyzed",
+              "leftValue": "={{ $json.body.event }}",
+              "rightValue": "call_analyzed",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [220, 0],
+      "id": "a0000000-0000-4000-8000-000000000002",
+      "name": "Is call_analyzed?"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.first().json.body || {};\nconst call = body.call || {};\nconst analysis = call.call_analysis || {};\nconst custom = analysis.custom_analysis_data || {};\n\nconst q1 = Number(custom.q1_escalabilidad_score || 0);\nconst q2 = Number(custom.q2_diferenciacion_score || 0);\nconst q3 = Number(custom.q3_enfoque_score || 0);\nconst q4 = Number(custom.q4_compromiso_score || 0);\nconst total = q1 + q2 + q3 + q4;\n\nlet verdict;\nif (total >= 17) verdict = 'Candidato A (Top)';\nelse if (total >= 13) verdict = 'Candidato B (Apto)';\nelse verdict = 'No Apto';\n\nconst questionsAnswered = Number(custom.questions_answered || 0);\nconst wantsFollowup = Boolean(custom.caller_wants_followup);\n\nconst startTs = call.start_timestamp || Date.now();\nconst tsUtc = new Date(startTs).toISOString();\nconst tsBogota = new Date(startTs).toLocaleString('es-CO', { timeZone: 'America/Bogota', hour12: false });\n\nconst candidateName = (custom.candidate_name || '').trim() || '(no proporcionado)';\nconst candidateCompany = (custom.candidate_company || '').trim() || '(no proporcionada)';\nconst summary = analysis.call_summary || '';\nconst sentiment = analysis.user_sentiment || '';\nconst recordingUrl = call.recording_url || '';\nconst transcriptHint = call.public_log_url || '';\n\nconst row = (label, score, obs) => `\n  <tr>\n    <td style=\"padding:6px 10px;border:1px solid #ddd;\"><strong>${label}</strong></td>\n    <td style=\"padding:6px 10px;border:1px solid #ddd;text-align:center;\">${score}/5</td>\n    <td style=\"padding:6px 10px;border:1px solid #ddd;\">${obs || '<em>(sin observación)</em>'}</td>\n  </tr>`;\n\nconst emailHtml = `<!DOCTYPE html>\n<html lang=\"es\"><body style=\"font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif;max-width:680px;margin:0 auto;padding:20px;color:#222;\">\n  <h2 style=\"margin:0 0 4px 0;\">Encuesta — Programa de Exportación de Servicios Modernos</h2>\n  <p style=\"margin:0 0 16px 0;color:#666;\">${tsBogota} (Bogotá) · ${call.call_id || ''}</p>\n\n  <table style=\"width:100%;border-collapse:collapse;margin-bottom:16px;\">\n    <tr><td style=\"padding:6px 10px;border:1px solid #ddd;background:#f7f7f7;width:200px;\"><strong>Candidato</strong></td><td style=\"padding:6px 10px;border:1px solid #ddd;\">${candidateName}</td></tr>\n    <tr><td style=\"padding:6px 10px;border:1px solid #ddd;background:#f7f7f7;\"><strong>Empresa</strong></td><td style=\"padding:6px 10px;border:1px solid #ddd;\">${candidateCompany}</td></tr>\n    <tr><td style=\"padding:6px 10px;border:1px solid #ddd;background:#f7f7f7;\"><strong>Preguntas respondidas</strong></td><td style=\"padding:6px 10px;border:1px solid #ddd;\">${questionsAnswered} / 4</td></tr>\n    <tr><td style=\"padding:6px 10px;border:1px solid #ddd;background:#f7f7f7;\"><strong>Pidió seguimiento</strong></td><td style=\"padding:6px 10px;border:1px solid #ddd;\">${wantsFollowup ? 'Sí' : 'No'}</td></tr>\n  </table>\n\n  <h3 style=\"margin:24px 0 8px 0;\">Matriz de Evaluación</h3>\n  <table style=\"width:100%;border-collapse:collapse;\">\n    <thead><tr><th style=\"padding:6px 10px;border:1px solid #ddd;background:#f0f0f0;text-align:left;\">Pregunta</th><th style=\"padding:6px 10px;border:1px solid #ddd;background:#f0f0f0;width:80px;\">Puntaje</th><th style=\"padding:6px 10px;border:1px solid #ddd;background:#f0f0f0;text-align:left;\">Observación</th></tr></thead>\n    <tbody>\n      ${row('1. Escalabilidad', q1, custom.q1_escalabilidad_obs)}\n      ${row('2. Diferenciación', q2, custom.q2_diferenciacion_obs)}\n      ${row('3. Enfoque comercial', q3, custom.q3_enfoque_obs)}\n      ${row('4. Compromiso', q4, custom.q4_compromiso_obs)}\n      <tr><td style=\"padding:8px 10px;border:1px solid #ddd;background:#f7f7f7;\"><strong>TOTAL</strong></td><td style=\"padding:8px 10px;border:1px solid #ddd;text-align:center;background:#f7f7f7;\"><strong>${total}/20</strong></td><td style=\"padding:8px 10px;border:1px solid #ddd;background:#f7f7f7;\"><strong>${verdict}</strong></td></tr>\n    </tbody>\n  </table>\n\n  <h3 style=\"margin:24px 0 8px 0;\">Resumen de la llamada</h3>\n  <p style=\"line-height:1.5;margin:0 0 8px 0;\">${summary || '<em>(sin resumen)</em>'}</p>\n  <p style=\"margin:0 0 16px 0;\"><strong>Sentimiento:</strong> ${sentiment || '(no clasificado)'}</p>\n\n  ${recordingUrl ? `<p><a href=\"${recordingUrl}\">▶ Escuchar la grabación</a></p>` : ''}\n  ${transcriptHint ? `<p><a href=\"${transcriptHint}\">📝 Ver transcripción y log</a></p>` : ''}\n</body></html>`;\n\nconst emailSubject = `[Encuesta] ${verdict} — ${candidateName} / ${candidateCompany}`;\n\nreturn [{\n  json: {\n    timestamp_utc: tsUtc,\n    timestamp_bogota: tsBogota,\n    call_id: call.call_id || '',\n    candidate_name: candidateName,\n    candidate_company: candidateCompany,\n    q1_escalabilidad: q1,\n    q2_diferenciacion: q2,\n    q3_enfoque: q3,\n    q4_compromiso: q4,\n    total,\n    verdict,\n    questions_answered: questionsAnswered,\n    wants_followup: wantsFollowup ? 'Sí' : 'No',\n    summary,\n    sentiment,\n    recording_url: recordingUrl,\n    email_subject: emailSubject,\n    email_html: emailHtml,\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [440, -120],
+      "id": "a0000000-0000-4000-8000-000000000003",
+      "name": "Compute Verdict"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "sendTo": "jesus@datasmarts.net",
+        "subject": "={{ $json.email_subject }}",
+        "emailType": "html",
+        "message": "={{ $json.email_html }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [660, -240],
+      "id": "a0000000-0000-4000-8000-000000000004",
+      "name": "Send Email",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "PxY342gB7M9eQF5h",
+          "name": "[DataSmarts] Gmail"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1dZFeYwBPxReBuN0nS_yXqSrtx_9lAvwVZlthvdH19fo",
+          "mode": "list",
+          "cachedResultName": "Spanish Phone Survey — Demo Log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1dZFeYwBPxReBuN0nS_yXqSrtx_9lAvwVZlthvdH19fo/edit"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Calls",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "timestamp_utc": "={{ $json.timestamp_utc }}",
+            "timestamp_bogota": "={{ $json.timestamp_bogota }}",
+            "call_id": "={{ $json.call_id }}",
+            "candidate_name": "={{ $json.candidate_name }}",
+            "candidate_company": "={{ $json.candidate_company }}",
+            "q1_escalabilidad": "={{ $json.q1_escalabilidad }}",
+            "q2_diferenciacion": "={{ $json.q2_diferenciacion }}",
+            "q3_enfoque": "={{ $json.q3_enfoque }}",
+            "q4_compromiso": "={{ $json.q4_compromiso }}",
+            "total": "={{ $json.total }}",
+            "verdict": "={{ $json.verdict }}",
+            "questions_answered": "={{ $json.questions_answered }}",
+            "wants_followup": "={{ $json.wants_followup }}",
+            "summary": "={{ $json.summary }}",
+            "sentiment": "={{ $json.sentiment }}",
+            "recording_url": "={{ $json.recording_url }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {"id":"timestamp_utc","displayName":"timestamp_utc","required":false,"defaultMatch":false,"display":true,"type":"string","canBeUsedToMatch":true},
+            {"id":"timestamp_bogota","displayName":"timestamp_bogota","required":false,"defaultMatch":false,"display":true,"type":"string","canBeUsedToMatch":true},
+            {"id":"call_id","displayName":"call_id","required":false,"defaultMatch":false,"display":true,"type":"string","canBeUsedToMatch":true},
+            {"id":"candidate_name","displayName":"candidate_name","required":false,"defaultMatch":false,"display":true,"type":"string","canBeUsedToMatch":true},
+            {"id":"candidate_company","displayName":"candidate_company","required":false,"defaultMatch":false,"display":true,"type":"string","canBeUsedToMatch":true},
+            {"id":"q1_escalabilidad","displayName":"q1_escalabilidad","required":false,"defaultMatch":false,"display":true,"type":"number","canBeUsedToMatch":true},
+            {"id":"q2_diferenciacion","displayName":"q2_diferenciacion","required":false,"defaultMatch":false,"display":true,"type":"number","canBeUsedToMatch":true},
+            {"id":"q3_enfoque","displayName":"q3_enfoque","required":false,"defaultMatch":false,"display":true,"type":"number","canBeUsedToMatch":true},
+            {"id":"q4_compromiso","displayName":"q4_compromiso","required":false,"defaultMatch":false,"display":true,"type":"number","canBeUsedToMatch":true},
+            {"id":"total","displayName":"total","required":false,"defaultMatch":false,"display":true,"type":"number","canBeUsedToMatch":true},
+            {"id":"verdict","displayName":"verdict","required":false,"defaultMatch":false,"display":true,"type":"string","canBeUsedToMatch":true},
+            {"id":"questions_answered","displayName":"questions_answered","required":false,"defaultMatch":false,"display":true,"type":"number","canBeUsedToMatch":true},
+            {"id":"wants_followup","displayName":"wants_followup","required":false,"defaultMatch":false,"display":true,"type":"string","canBeUsedToMatch":true},
+            {"id":"summary","displayName":"summary","required":false,"defaultMatch":false,"display":true,"type":"string","canBeUsedToMatch":true},
+            {"id":"sentiment","displayName":"sentiment","required":false,"defaultMatch":false,"display":true,"type":"string","canBeUsedToMatch":true},
+            {"id":"recording_url","displayName":"recording_url","required":false,"defaultMatch":false,"display":true,"type":"string","canBeUsedToMatch":true}
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [880, -240],
+      "id": "a0000000-0000-4000-8000-000000000005",
+      "name": "Append to Sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "qDGPNqnKLwO1pYbS",
+          "name": "[DataSmarts] Google Sheets"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Retell Webhook": {
+      "main": [[{ "node": "Is call_analyzed?", "type": "main", "index": 0 }]]
+    },
+    "Is call_analyzed?": {
+      "main": [
+        [{ "node": "Compute Verdict", "type": "main", "index": 0 }],
+        []
+      ]
+    },
+    "Compute Verdict": {
+      "main": [[{ "node": "Send Email", "type": "main", "index": 0 }]]
+    },
+    "Send Email": {
+      "main": [[{ "node": "Append to Sheet", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

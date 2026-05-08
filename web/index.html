@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Entrevista — Programa de Exportación de Servicios Modernos</title>
+<style>
+  :root { color-scheme: light; }
+  *,*::before,*::after { box-sizing: border-box; }
+  body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; color: #1f2937; background: linear-gradient(140deg,#f8fafc 0%,#e0f2fe 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
+  .card { background: #ffffff; max-width: 560px; width: 100%; border-radius: 18px; box-shadow: 0 20px 60px rgba(15,23,42,0.12); padding: 36px 32px; }
+  h1 { margin: 0 0 8px; font-size: 22px; font-weight: 600; }
+  p.lead { margin: 0 0 18px; color: #475569; line-height: 1.55; }
+  .perm { margin: 0 0 16px; padding: 10px 14px; border-radius: 10px; font-size: 13px; font-weight: 600; }
+  .perm.granted { background: #dcfce7; color: #166534; }
+  .perm.prompt   { background: #fef3c7; color: #92400e; }
+  .perm.denied   { background: #fee2e2; color: #991b1b; }
+  .perm.unknown  { background: #f1f5f9; color: #475569; }
+  button { width: 100%; padding: 14px 18px; border-radius: 12px; border: 0; font-size: 15px; font-weight: 600; cursor: pointer; transition: transform 0.05s, background 0.15s; margin-top: 10px; }
+  button:disabled { opacity: 0.55; cursor: not-allowed; }
+  button.primary { background: #0f172a; color: #fff; }
+  button.primary:hover:not(:disabled) { background: #1e293b; }
+  button.secondary { background: #fff; border: 1px solid #cbd5e1; color: #0f172a; }
+  button.secondary:hover { background: #f8fafc; }
+  button.danger { background: #fff; border: 1px solid #ef4444; color: #ef4444; }
+  button.danger:hover { background: #fef2f2; }
+  .status { margin-top: 14px; padding: 12px 14px; border-radius: 10px; font-size: 13px; line-height: 1.5; display: none; }
+  .status.show { display: block; }
+  .status.connecting { background: #fef3c7; color: #92400e; }
+  .status.live { background: #dcfce7; color: #166534; }
+  .status.error { background: #fee2e2; color: #991b1b; }
+  .status code { font-family: ui-monospace, SFMono-Regular, monospace; font-size: 12px; background: rgba(0,0,0,0.06); padding: 1px 4px; border-radius: 3px; }
+  .pulse { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #16a34a; margin-right: 8px; vertical-align: middle; animation: pulse 1.2s ease-in-out infinite; }
+  @keyframes pulse { 0%,100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.4); opacity: 0.5; } }
+  .meter { display: none; margin-top: 12px; padding: 12px 14px; border-radius: 10px; background: #f1f5f9; font-size: 13px; color: #475569; }
+  .meter.show { display: block; }
+  .meter .label { display: block; margin-bottom: 6px; font-weight: 600; }
+  .meter .bar { height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; }
+  .meter .bar > .fill { height: 100%; width: 0%; background: linear-gradient(90deg,#22c55e,#16a34a); transition: width 80ms linear; }
+  .meter .hint { display: block; margin-top: 6px; font-size: 12px; color: #94a3b8; }
+  .footer { margin-top: 22px; padding-top: 16px; border-top: 1px solid #e2e8f0; font-size: 11px; color: #94a3b8; line-height: 1.5; }
+  .ua { font-family: ui-monospace, SFMono-Regular, monospace; font-size: 10px; color: #94a3b8; word-break: break-all; }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>Entrevista de evaluación</h1>
+  <p class="lead">Programa de Exportación de Servicios Modernos. Conversación con <strong>Sofía</strong>, en su navegador. Pruebe primero el micrófono, luego inicie la entrevista.</p>
+  <div id="permBanner" class="perm unknown">Verificando permiso del micrófono…</div>
+
+  <button id="testBtn" class="secondary">🎙️ Probar micrófono</button>
+  <button id="startBtn" class="primary" disabled>Cargando entrevista…</button>
+  <button id="stopBtn" class="danger" style="display:none;">Finalizar llamada</button>
+
+  <div id="meter" class="meter">
+    <span class="label">Nivel de su micrófono</span>
+    <div class="bar"><div id="meterFill" class="fill"></div></div>
+    <span id="meterHint" class="hint">Diga algo: la barra debería moverse.</span>
+  </div>
+
+  <div id="status" class="status"></div>
+  <div class="footer">
+    Powered by Retell AI · DataSmarts
+    <div class="ua" id="ua"></div>
+  </div>
+</div>
+<script type="module">
+  let RetellWebClient;
+  try {
+    ({ RetellWebClient } = await import("https://esm.sh/retell-client-js-sdk@2.0.7?bundle"));
+  } catch (e) {
+    document.getElementById("status").className = "status show error";
+    document.getElementById("status").innerHTML = "No se pudo cargar el SDK de Retell: <code>" + (e.message || e) + "</code>";
+  }
+
+  const $ = (id) => document.getElementById(id);
+  const permBanner = $("permBanner");
+  const startBtn = $("startBtn");
+  const testBtn = $("testBtn");
+  const stopBtn = $("stopBtn");
+  const statusEl = $("status");
+  const meterEl = $("meter");
+  const meterFill = $("meterFill");
+  const meterHint = $("meterHint");
+  $("ua").textContent = navigator.userAgent;
+
+  let client = null;
+  let testStream = null;
+  let audioCtx = null;
+  let rafId = null;
+
+  const setStatus = (html, kind) => { statusEl.innerHTML = html; statusEl.className = "status show " + (kind || ""); };
+  const setPerm = (state) => {
+    permBanner.className = "perm " + state;
+    permBanner.textContent = ({
+      granted: "✅ Permiso del micrófono: concedido. Puede iniciar la entrevista.",
+      prompt:  "⚠️ Permiso del micrófono: pendiente. Al hacer clic, el navegador le preguntará — pulse Permitir.",
+      denied:  "❌ Permiso del micrófono: BLOQUEADO. Haga clic en el icono 🔒 a la izquierda de la URL → Micrófono → Permitir, y recargue. O abra la página en una ventana de incógnito.",
+      unknown: "ℹ️ Estado del permiso desconocido. Pruebe el micrófono."
+    })[state];
+  };
+
+  const startMeter = (stream) => {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const src = audioCtx.createMediaStreamSource(stream);
+    const an = audioCtx.createAnalyser(); an.fftSize = 1024;
+    src.connect(an);
+    const data = new Uint8Array(an.fftSize);
+    meterEl.classList.add("show");
+    const tick = () => {
+      an.getByteTimeDomainData(data);
+      let peak = 0;
+      for (let i = 0; i < data.length; i++) { const v = Math.abs(data[i]-128); if (v>peak) peak = v; }
+      const pct = Math.min(100, Math.round((peak/128)*200));
+      meterFill.style.width = pct + "%";
+      if (pct > 6) meterHint.textContent = "Micrófono captando audio. ✅";
+      rafId = requestAnimationFrame(tick);
+    };
+    tick();
+  };
+  const stopMeter = () => {
+    if (rafId) cancelAnimationFrame(rafId); rafId = null;
+    if (audioCtx) { try { audioCtx.close(); } catch(e){} audioCtx = null; }
+    if (testStream) { testStream.getTracks().forEach(t=>t.stop()); testStream = null; }
+    meterEl.classList.remove("show");
+  };
+
+  (async () => {
+    try {
+      const p = await navigator.permissions.query({ name: "microphone" });
+      setPerm(p.state);
+      p.onchange = () => setPerm(p.state);
+    } catch (e) {
+      setPerm("unknown");
+    }
+    if (RetellWebClient) {
+      startBtn.disabled = false;
+      startBtn.textContent = "🎤 Iniciar entrevista";
+    }
+  })();
+
+  testBtn.addEventListener("click", async () => {
+    setStatus("Solicitando acceso al micrófono…", "connecting");
+    try {
+      testStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    } catch (e) {
+      console.error("getUserMedia error:", e);
+      setStatus("No se pudo acceder al micrófono. Tipo: <code>" + (e.name || "Error") + "</code>. Mensaje: <code>" + (e.message || "") + "</code>. Si dice <code>NotAllowedError</code>, está bloqueado en el navegador. Si dice <code>NotFoundError</code>, no hay micrófono. Si dice <code>NotReadableError</code>, otra app está usando el micrófono.", "error");
+      return;
+    }
+    const tracks = testStream.getAudioTracks();
+    setStatus("Micrófono activo: <code>" + (tracks[0]?.label || "(sin nombre)") + "</code>. La barra de nivel debería moverse cuando hable. Cuando esté listo, haga clic en <strong>Iniciar entrevista</strong>.", "live");
+    startMeter(testStream);
+  });
+
+  startBtn.addEventListener("click", async () => {
+    if (!RetellWebClient) { setStatus("SDK no cargado.", "error"); return; }
+    stopMeter();
+    startBtn.disabled = true;
+    startBtn.textContent = "Conectando…";
+    setStatus("Solicitando llamada…", "connecting");
+    let accessToken = null;
+    try {
+      const resp = await fetch("/api/create-web-call", { method: "POST", headers: {"Content-Type":"application/json"}, body: "{}" });
+      const data = await resp.json().catch(()=>({}));
+      if (!resp.ok || !data.access_token) throw new Error((data && (data.error||data.message)) || ("HTTP "+resp.status));
+      accessToken = data.access_token;
+    } catch (e) {
+      setStatus("No se pudo crear la llamada: <code>"+(e.message||e)+"</code>", "error");
+      startBtn.disabled = false; startBtn.textContent = "🎤 Iniciar entrevista";
+      return;
+    }
+    try {
+      client = new RetellWebClient();
+      client.on("call_started", () => {
+        setStatus('<span class="pulse"></span>En vivo con Sofía. Hable cuando le pregunte.', "live");
+        startBtn.style.display = "none";
+        stopBtn.style.display = "block";
+      });
+      client.on("call_ended", () => {
+        setStatus("La llamada terminó. Recibirá un correo si completó la entrevista.", "live");
+        startBtn.style.display = "block"; startBtn.disabled = false; startBtn.textContent = "🎤 Iniciar entrevista";
+        stopBtn.style.display = "none";
+      });
+      client.on("error", (err) => {
+        console.error("retell error:", err);
+        setStatus("Error en la llamada: <code>"+(err && (err.message||JSON.stringify(err)) || err)+"</code>", "error");
+        try { client.stopCall(); } catch(e){}
+        startBtn.style.display = "block"; startBtn.disabled = false; startBtn.textContent = "🎤 Iniciar entrevista";
+        stopBtn.style.display = "none";
+      });
+      await client.startCall({ accessToken });
+    } catch (e) {
+      console.error(e);
+      setStatus("startCall falló: <code>"+(e.name||"Error")+"</code> — <code>"+(e.message||"")+"</code>", "error");
+      startBtn.disabled = false; startBtn.textContent = "🎤 Iniciar entrevista";
+    }
+  });
+
+  stopBtn.addEventListener("click", () => {
+    try { client && client.stopCall(); } catch(e) {}
+  });
+</script>
+</body>
+</html>
