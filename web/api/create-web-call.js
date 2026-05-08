@@ -2,7 +2,7 @@ export const config = { runtime: "edge" };
 
 const AGENT_ID = "agent_c08a58dd2fc26d6bbb62911625";
 
-export default async function handler(req: Request): Promise<Response> {
+export default async function handler(req) {
   if (req.method !== "POST") {
     return json({ error: "Method not allowed" }, 405);
   }
@@ -25,7 +25,7 @@ export default async function handler(req: Request): Promise<Response> {
   return json({ call_id: body.call_id, access_token: body.access_token });
 }
 
-function json(payload: unknown, status = 200): Response {
+function json(payload, status = 200) {
   return new Response(JSON.stringify(payload), {
     status,
     headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
