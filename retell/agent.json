@@ -10,7 +10,7 @@
   "response_engine": {
     "type": "retell-llm",
     "llm_id": "llm_eae40a7d15f589bbcf520882dffd",
-    "version": 0
+    "version": 1
   },
   "webhook_url": "https://n8n.srv841363.hstgr.cloud/webhook/retell-survey",
   "webhook_events": ["call_analyzed"],

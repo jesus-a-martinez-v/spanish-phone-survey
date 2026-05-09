@@ -53,7 +53,7 @@ Copia el siguiente texto en ChatGPT o Claude. Cada vez que vayas a evaluar a un 
 
 #### **1\. Capacidad de Respuesta (Escalabilidad)**
 
-* **Pregunta:** *"Si mañana cerramos un contrato que te exige triplicar tu entrega en 30 días, ¿qué es lo primero que colapsa en tu operación y cómo lo resolverías?"*  
+* **Pregunta:** *"¿Si tu demanda se triplicara en 30 días, qué parte de tu operación fallaría primero y cómo lo solucionarías?"*  
 * **Criterio de Calificación:**  
   * **Alto (5 pts):** Identifica el cuello de botella (ej. reclutamiento o procesos) y tiene un plan de contingencia claro (ej. red de aliados o software).  
   * **Bajo (1 pt):** No sabe qué fallaría o dice que "él lo haría todo", demostrando falta de estructura.
@@ -67,14 +67,14 @@ Copia el siguiente texto en ChatGPT o Claude. Cada vez que vayas a evaluar a un 
 
 #### **3\. Enfoque Comercial (Agilidad)**
 
-* **Pregunta:** *"¿Cuáles son los 3 criterios exactos para identificar a tu cliente ideal en LinkedIn hoy mismo y quién es el responsable de contactarlos?"*  
+* **Pregunta:** *"¿Cuáles son los 3 criterios exactos para identificar a tu cliente ideal en el mercado y quién es el responsable de contactarlos?"*  
 * **Criterio de Calificación:**  
   * **Alto (5 pts):** Define industria, cargo y facturación con precisión; tiene un responsable asignado.  
   * **Bajo (1 pt):** No tiene claro quién es su cliente o dice que "cualquiera puede ser su cliente".
 
 #### **4\. Prioridad y Compromiso (Inversión)**
 
-* **Pregunta:** *"Si surge una crisis operativa durante el programa, ¿qué actividades delegarás para asegurar que cumplirás con las 50 horas mensuales de ejecución que exige este piloto?"*  
+* **Pregunta:** *"Si surge una crisis en tu empresa durante el programa, ¿qué actividades delegarás para asegurar que cumplirás con las 50 horas mensuales de ejecución que exige este piloto?"*  
 * **Criterio de Calificación:**  
   * **Alto (5 pts):** Tiene una estructura de apoyo y el programa es su prioridad estratégica número uno.  
   * **Bajo (1 pt):** Admite que si tiene mucho trabajo local, tendría que pausar el programa.
